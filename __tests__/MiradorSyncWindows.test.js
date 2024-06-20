@@ -1,6 +1,6 @@
 import React from 'react';
 import { render, screen } from './test-utils';
-import { TestableImageTools as MiradorSyncWindows } from '../src/plugins/MiradorSyncWindows';
+import { TestablesyncWindows as MiradorSyncWindows } from '../src/plugins/MiradorSyncWindows';
 
 const mockPalette = {
   palette: {

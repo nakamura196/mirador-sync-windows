@@ -139,7 +139,7 @@ const MiradorSyncWindowsButton = ({
                     <p>
                         {groups.map((windowGroup, index) => {
                             return (
-                                <Accordion>
+                                <Accordion variant='outlined'>
                                     <AccordionSummary
                                         key={index}
                                         expandIcon={<ExpandMoreIcon />}

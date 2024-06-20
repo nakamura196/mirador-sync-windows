@@ -11,9 +11,9 @@
 
 Several configuration options are available on windows that use mirador-sync-windows.
 
-| Configuration    | type    | default | description                     |
-| ---------------- | ------- | ------- | ------------------------------- |
-| `imageToolsOpen` | boolean | false   | Open the image tools by default |
+| Configuration        | type    | default | description                        |
+| -------------------- | ------- | ------- | ---------------------------------- |
+| `syncWindowsEnabled` | boolean | false   | Enabled the image tools by default |
 
 Example configuration:
 

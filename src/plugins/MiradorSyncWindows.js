@@ -3,10 +3,8 @@ import PropTypes from 'prop-types';
 import compose from 'lodash/flowRight';
 import { withSize } from 'react-sizeme';
 
-import TuneSharpIcon from '@mui/icons-material/TuneSharp';
-import CloseSharpIcon from '@mui/icons-material/CloseSharp';
+
 import { styled, alpha } from '@mui/material/styles';
-import MiradorMenuButton from 'mirador/dist/es/src/containers/MiradorMenuButton';
 
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
@@ -77,17 +75,11 @@ const Root = styled('div')(({ small, theme: { palette } }) => {
 class MiradorSyncWindows extends Component {
   constructor(props) {
     super(props);
-    this.toggleState = this.toggleState.bind(this);
   }
 
   handleChange(param) {
     const { updateViewport, windowId } = this.props;
     return (value) => updateViewport(windowId, { [param]: value });
-  }
-
-  toggleState() {
-    const { open, updateWindow, windowId } = this.props;
-    updateWindow(windowId, { imageToolsOpen: !open });
   }
 
   selectGroup(name) {
@@ -98,7 +90,7 @@ class MiradorSyncWindows extends Component {
 
   render() {
     const {
-      enabled, open, viewer,
+      enabled, viewer,
       viewConfig: {
       },
       groups,
@@ -111,7 +103,7 @@ class MiradorSyncWindows extends Component {
       <React.Fragment>
         <SizeContainer>
           <Root className="MuiPaper-elevation4">
-            {open
+            {true
               && (
                 <React.Fragment>
                   <List>
@@ -152,7 +144,6 @@ class MiradorSyncWindows extends Component {
 
 MiradorSyncWindows.propTypes = {
   enabled: PropTypes.bool,
-  open: PropTypes.bool,
   size: PropTypes.object, // eslint-disable-line react/forbid-prop-types
   t: PropTypes.func.isRequired,
   updateViewport: PropTypes.func.isRequired,
@@ -165,7 +156,6 @@ MiradorSyncWindows.propTypes = {
 
 MiradorSyncWindows.defaultProps = {
   enabled: true,
-  open: true,
   size: {},
   viewer: undefined,
   viewConfig: {},
@@ -173,6 +163,6 @@ MiradorSyncWindows.defaultProps = {
 };
 
 // Export without wrapping HOC for testing.
-export const TestableImageTools = MiradorSyncWindows;
+export const TestablesyncWindows = MiradorSyncWindows;
 
 export default compose(withSize())(MiradorSyncWindows);

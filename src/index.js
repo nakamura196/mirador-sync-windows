@@ -15,8 +15,7 @@ export const MiradorSyncWindowsPlugin = [
     },
     mapStateToProps: (state, { windowId }) => ({
       containerId: getContainerId(state),
-      enabled: getWindowConfig(state, { windowId }).imageToolsEnabled || false,
-      open: getWindowConfig(state, { windowId }).imageToolsOpen || false,
+      enabled: getWindowConfig(state, { windowId }).syncWindowsEnabled || false,
       viewConfig: getViewer(state, { windowId }) || {},
       groups: getConfig(state).state.groups || [],
       groupName: getWindowConfig(state, { windowId }).groupName || "",
@@ -35,7 +34,7 @@ export const MiradorSyncWindowsPlugin = [
       updateWindow: actions.updateWindow,
     },
     mapStateToProps: (state, { windowId }) => ({
-      enabled: getWindowConfig(state, { windowId }).imageToolsEnabled || false,
+      enabled: getWindowConfig(state, { windowId }).syncWindowsEnabled || false,
 
     }),
   },

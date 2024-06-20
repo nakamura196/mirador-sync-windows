@@ -3,15 +3,23 @@ import { MiradorSyncWindowsPlugin } from '../../src';
 
 const config = {
   id: 'demo',
-  windows: [{
-    imageToolsEnabled: true,
-    imageToolsOpen: true,
-    manifestId: 'https://purl.stanford.edu/sn904cj3429/iiif/manifest',
-  }, {
-    imageToolsEnabled: true,
-    imageToolsOpen: true,
-    manifestId: 'https://purl.stanford.edu/sn904cj3429/iiif/manifest',
-  }],
+  windows: [
+    {
+      id: "first",
+      syncWindowsEnabled: true,
+      manifestId: 'https://nuxt3-mirador3.vercel.app/manifest2.json',
+    },
+    {
+      id: "second",
+      syncWindowsEnabled: true,
+      manifestId: 'https://nuxt3-mirador3.vercel.app/manifest.json',
+    },
+    {
+      id: "third",
+      syncWindowsEnabled: true,
+      manifestId: 'https://nuxt3-mirador3.vercel.app/manifest.json',
+    }
+  ],
   theme: {
     palette: {
       primary: {
@@ -19,6 +27,18 @@ const config = {
       },
     },
   },
+  workspace: {
+    layout: {
+      direction: 'row',
+      first: 'first',
+      second: {
+        direction: 'row',
+        first: 'second',
+        second: 'third',
+      },
+      splitPercentage: 100 / 3,
+    }
+  }
 };
 
 Mirador.viewer(config, [

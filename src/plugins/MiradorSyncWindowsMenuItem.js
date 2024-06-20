@@ -10,7 +10,7 @@ const MiradorSyncWindowsMenuItem = ({
 }) => {
   const handleClickOpen = () => {
     handleClose();
-    updateWindow(windowId, { imageToolsEnabled: !enabled });
+    updateWindow(windowId, { syncWindowsEnabled: !enabled });
   };
 
   return (
