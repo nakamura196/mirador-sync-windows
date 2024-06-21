@@ -1,0 +1,4 @@
+[submodule "mirador-image-tools"]
+    path = mirador-image-tools
+    url = https://github.com/ProjectMirador/mirador-image-tools.git
+    branch = mirador4-compat-clean

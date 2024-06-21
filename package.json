@@ -1,7 +1,7 @@
 {
-  "name": "mirador-image-tools",
+  "name": "mirador-sync-windows",
   "version": "1.0.0-alpha.1",
-  "description": "mirador-image-tools React component",
+  "description": "mirador-sync-windows React component",
   "main": "lib/index.js",
   "module": "es/index.js",
   "files": [
@@ -30,6 +30,8 @@
     "@emotion/react": "^11.10.6",
     "@emotion/styled": "^11.10.6",
     "@mui/icons-material": "^5.15.20",
+    "d3-delaunay": "^6.0.4",
+    "i": "^0.3.7",
     "lodash": "^4.17.21",
     "react-sizeme": "^3.0.2"
   },

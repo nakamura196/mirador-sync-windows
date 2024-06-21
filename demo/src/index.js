@@ -1,5 +1,7 @@
 import Mirador from 'mirador/dist/es/src/index';
 import { MiradorSyncWindowsPlugin } from '../../src';
+// import { miradorImageToolsPlugin } from '../../mirador-image-tools/src';
+
 
 const config = {
   id: 'demo',
@@ -7,18 +9,17 @@ const config = {
     {
       id: "first",
       syncWindowsEnabled: true,
-      manifestId: 'https://nuxt3-mirador3.vercel.app/manifest2.json',
+      imageToolsEnabled: true,
+      imageToolsOpen: true,
+      manifestId: "https://nakamura196.github.io/mirador2-sync-windows/data/examples/org.json" // 'https://iiif.harvardartmuseums.org/manifests/object/299843',
     },
     {
       id: "second",
       syncWindowsEnabled: true,
-      manifestId: 'https://nuxt3-mirador3.vercel.app/manifest.json',
+      imageToolsEnabled: true,
+      imageToolsOpen: true,
+      manifestId: 'https://nakamura196.github.io/mirador2-sync-windows/data/examples/inf.json',
     },
-    {
-      id: "third",
-      syncWindowsEnabled: true,
-      manifestId: 'https://nuxt3-mirador3.vercel.app/manifest.json',
-    }
   ],
   theme: {
     palette: {
@@ -31,16 +32,13 @@ const config = {
     layout: {
       direction: 'row',
       first: 'first',
-      second: {
-        direction: 'row',
-        first: 'second',
-        second: 'third',
-      },
-      splitPercentage: 100 / 3,
+      second: "second",
+      splitPercentage: 50,
     }
   }
 };
 
 Mirador.viewer(config, [
   ...MiradorSyncWindowsPlugin,
+  // miradorImageToolsPlugin,
 ]);

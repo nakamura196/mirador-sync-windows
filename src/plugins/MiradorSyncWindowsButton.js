@@ -55,7 +55,8 @@ const MiradorSyncWindowsButton = ({
                         name,
                         settings: {
                             zoom: true,
-                            rotation: true
+                            rotation: true,
+                            isBasicMode: true,
                         }
                     }
                 ]
@@ -76,6 +77,7 @@ const MiradorSyncWindowsButton = ({
         }
     }
 
+
     const updateRotation = (index) => {
         return (event) => {
             const groups_ = [...groups];
@@ -88,10 +90,23 @@ const MiradorSyncWindowsButton = ({
         }
     }
 
+
     const updateZoom = (index) => {
         return (event) => {
             const groups_ = [...groups];
             groups_[index].settings.zoom = event.target.checked;
+            updateConfig({
+                state: {
+                    groups: groups_
+                }
+            })
+        }
+    }
+
+    const updateIsBasicMode = (index) => {
+        return (event) => {
+            const groups_ = [...groups];
+            groups_[index].settings.isBasicMode = !event.target.checked;
             updateConfig({
                 state: {
                     groups: groups_
@@ -117,13 +132,13 @@ const MiradorSyncWindowsButton = ({
                     <Typography variant="h2">Manage Synchronized Windows</Typography>
                 </DialogTitle>
                 <DialogContent>
-                    <p>
+                    <div style={{ marginBottom: 8 }}>
                         Window Group Name:
-                    </p>
+                    </div>
                     <Paper
                         component="form"
                         variant="outlined"
-                        sx={{ p: '2px 4px', display: 'flex', alignItems: 'center', width: 400 }}
+                        sx={{ p: '2px 4px', display: 'flex', alignItems: 'center', width: 400, border: '1px solid #000' }}
                     >
                         <InputBase
                             sx={{ ml: 1, flex: 1 }}
@@ -136,10 +151,10 @@ const MiradorSyncWindowsButton = ({
                         </IconButton>
                     </Paper>
 
-                    <p>
+                    <div>
                         {groups.map((windowGroup, index) => {
                             return (
-                                <Accordion variant='outlined'>
+                                <Accordion variant='outlined' style={{ marginTop: 8, border: '1px solid #000' }}>
                                     <AccordionSummary
                                         key={index}
                                         expandIcon={<ExpandMoreIcon />}
@@ -155,13 +170,23 @@ const MiradorSyncWindowsButton = ({
                                                     updateZoom(index)
                                                 } />
                                             } label="zoom/pan" />
+
                                             <FormControlLabel control={
                                                 <Checkbox checked={windowGroup.settings.rotation}
                                                     onChange={
                                                         updateRotation(index)
                                                     }
                                                 />
-                                            } label="rotationd" />
+                                            } label="rotation" />
+
+                                            <FormControlLabel control={
+                                                <Checkbox checked={
+                                                    !windowGroup.settings.isBasicMode}
+                                                    onChange={
+                                                        updateIsBasicMode(index)
+                                                    }
+                                                />
+                                            } label="advanced" />
                                         </FormGroup>
                                     </AccordionDetails>
                                     <AccordionActions>
@@ -172,7 +197,7 @@ const MiradorSyncWindowsButton = ({
                                 </Accordion>
                             );
                         })}
-                    </p>
+                    </div>
                 </DialogContent>
             </Dialog>
         </>

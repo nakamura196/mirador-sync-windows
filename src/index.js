@@ -10,6 +10,7 @@ export const MiradorSyncWindowsPlugin = [
   {
     target: 'OpenSeadragonViewer',
     mapDispatchToProps: {
+      updateConfig: actions.updateConfig,
       updateWindow: actions.updateWindow,
       updateViewport: actions.updateViewport,
     },
@@ -17,8 +18,22 @@ export const MiradorSyncWindowsPlugin = [
       containerId: getContainerId(state),
       enabled: getWindowConfig(state, { windowId }).syncWindowsEnabled || false,
       viewConfig: getViewer(state, { windowId }) || {},
-      groups: getConfig(state).state.groups || [],
+      groups: getConfig(state).state.groups || [
+        /*
+        {
+          name: "test",
+          settings: {
+            zoom: true,
+            rotation: true,
+            isBasicMode: false
+          }
+        }
+          */
+      ],
       groupName: getWindowConfig(state, { windowId }).groupName || "",
+      zoom: getViewer(state, { windowId })?.zoom || 0,
+      window: getWindowConfig(state, { windowId }),
+      config: getConfig(state),
     }),
     mode: 'add',
     component: MiradorSyncWindows,
@@ -35,7 +50,6 @@ export const MiradorSyncWindowsPlugin = [
     },
     mapStateToProps: (state, { windowId }) => ({
       enabled: getWindowConfig(state, { windowId }).syncWindowsEnabled || false,
-
     }),
   },
   {

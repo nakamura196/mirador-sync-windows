@@ -36,7 +36,7 @@ const baseConfig = mode => ({
     ],
   },
   output: {
-    filename: 'mirador-image-tools.js',
+    filename: 'mirador-sync-windows.js',
     hashFunction: 'md5',
     library: 'MiradorSyncWindows',
     libraryExport: 'default',
