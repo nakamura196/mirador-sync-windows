@@ -1,6 +1,10 @@
-import React, { useState } from 'react';
+import React, { Component } from 'react';
 
-import MiradorMenuButton from 'mirador/dist/es/src/containers/MiradorMenuButton';
+//  useState,
+
+import PropTypes from 'prop-types';
+
+import MiradorMenuButton from '@nakamura196/mirador/dist/es/src/containers/MiradorMenuButton';
 
 import AccountTree from '@mui/icons-material/AccountTree';
 import Dialog from '@mui/material/Dialog';
@@ -25,183 +29,221 @@ import { AccordionActions } from '@mui/material';
 
 import DeleteIcon from '@mui/icons-material/Delete';
 
-const MiradorSyncWindowsButton = ({
-    updateConfig,
-    groups
-}) => {
+class MiradorSyncWindowsButton extends Component {
+  constructor(props) {
+    super(props);
 
-    const [isDialogOpen, setIsDialogOpen] = useState(false);
-
-    const [name, setName] = useState("");
-
-    const handleClose = () => {
-        setIsDialogOpen(false);
-    }
-
-    const handleClickOpen = () => {
-        setIsDialogOpen(true);
+    // Initialize state
+    this.state = {
+      windowGroupName: '', // This will store the input value
+      open: false,
     };
+  }
 
-    const handleChange = (event) => {
-        setName(event.target.value);
-    }
+  handleClickOpen = () => {
+    this.setState({ open: true });
+  };
 
-    const addWindowGroupName = () => {
-        updateConfig({
-            state: {
-                groups: [
-                    ...groups,
-                    {
-                        name,
-                        settings: {
-                            zoom: true,
-                            rotation: true,
-                            isBasicMode: true,
-                        }
-                    }
-                ]
-            }
-        })
-        setName("");
-    }
+  handleClose = () => {
+    this.setState({ open: false });
+  };
 
-    const deleteGroup = (index) => {
-        return () => {
-            const groups_ = [...groups];
-            groups_.splice(index, 1);
-            updateConfig({
-                state: {
-                    groups: groups_
-                }
-            })
-        }
-    }
+  handleChange = (event) => {
+    this.setState({ windowGroupName: event.target.value });
+  };
 
+  addWindowGroupName = () => {
+    const { windowGroupName } = this.state;
 
-    const updateRotation = (index) => {
-        return (event) => {
-            const groups_ = [...groups];
-            groups_[index].settings.rotation = event.target.checked;
-            updateConfig({
-                state: {
-                    groups: groups_
-                }
-            })
-        }
-    }
+    this.setState({ windowGroupName: '' });
 
+    const { syncWindows, updateWorkspace } = this.props;
 
-    const updateZoom = (index) => {
-        return (event) => {
-            const groups_ = [...groups];
-            groups_[index].settings.zoom = event.target.checked;
-            updateConfig({
-                state: {
-                    groups: groups_
-                }
-            })
-        }
-    }
+    const groups = syncWindows.groups || [];
 
-    const updateIsBasicMode = (index) => {
-        return (event) => {
-            const groups_ = [...groups];
-            groups_[index].settings.isBasicMode = !event.target.checked;
-            updateConfig({
-                state: {
-                    groups: groups_
-                }
-            })
-        }
-    }
+    const groupsCopied = [...groups];
+
+    groupsCopied.push({
+      id: crypto.randomUUID(),
+      name: windowGroupName,
+      settings: {
+        zoom: true,
+        rotation: true,
+        isBasicMode: true,
+      },
+    });
+
+    updateWorkspace({
+
+      syncWindows: {
+        groups: groupsCopied,
+      },
+    });
+  };
+
+  updateGroup = (index, key) => (event) => {
+    const { syncWindows, updateWorkspace } = this.props;
+    const groups = syncWindows.groups || [];
+
+    const groupsCopied = [...groups];
+    groupsCopied[index].settings[key] = event.target.checked;
+
+    updateWorkspace({
+      syncWindows: {
+        groups: groupsCopied,
+      },
+    });
+  };
+
+  deleteGroup = (index) => () => {
+    const { syncWindows, updateWorkspace } = this.props;
+    const groups = syncWindows.groups || [];
+
+    const groupsCopied = [...groups];
+    groupsCopied.splice(index, 1);
+
+    updateWorkspace({
+      syncWindows: {
+        groups: groupsCopied,
+      },
+    });
+  };
+
+  render() {
+    const { syncWindows } = this.props;
+    const { open, windowGroupName } = this.state;
+    const groups = syncWindows.groups || [];
 
     return (
-        <>
-            <MiradorMenuButton
-                aria-label="Synchronized Windows"
-                onClick={handleClickOpen}
+      <>
+        <MiradorMenuButton
+          aria-label="Synchronized Windows"
+          onClick={this.handleClickOpen}
+        >
+          <AccountTree />
+        </MiradorMenuButton>
+
+        <Dialog
+          open={open}
+          onClose={this.handleClose}
+        >
+          <DialogTitle>
+            <Typography variant="h2">Manage Synchronized Windows</Typography>
+          </DialogTitle>
+          <DialogContent>
+            <div style={{ marginBottom: 8 }}>
+              Window Group Name:
+            </div>
+            <Paper
+              component="form"
+              variant="outlined"
+              sx={{
+                p: '2px 4px', display: 'flex', alignItems: 'center', width: 400, border: '1px solid #000',
+              }}
+              onSubmit={(e) => {
+                e.preventDefault(); // デフォルトのフォーム送信を防ぐ
+                this.addWindowGroupName(); // addWindowGroupName メソッドを実行
+              }}
             >
-                <AccountTree />
-            </MiradorMenuButton>
+              <InputBase
+                sx={{ ml: 1, flex: 1 }}
+                value={windowGroupName}
+                onChange={this.handleChange}
+              />
+              {/* {name} */}
+              <Divider sx={{ height: 28, m: 0.5 }} orientation="vertical" />
+              <IconButton color="primary" sx={{ p: '10px' }} type="submit">
+                <AddIcon />
+              </IconButton>
+            </Paper>
 
-            <Dialog
-                open={isDialogOpen}
-                onClose={handleClose}
-            >
-                <DialogTitle>
-                    <Typography variant="h2">Manage Synchronized Windows</Typography>
-                </DialogTitle>
-                <DialogContent>
-                    <div style={{ marginBottom: 8 }}>
-                        Window Group Name:
-                    </div>
-                    <Paper
-                        component="form"
-                        variant="outlined"
-                        sx={{ p: '2px 4px', display: 'flex', alignItems: 'center', width: 400, border: '1px solid #000' }}
-                    >
-                        <InputBase
-                            sx={{ ml: 1, flex: 1 }}
-                            value={name}
-                            onChange={handleChange}
-                        />
-                        <Divider sx={{ height: 28, m: 0.5 }} orientation="vertical" />
-                        <IconButton color="primary" sx={{ p: '10px' }} onClick={addWindowGroupName}>
-                            <AddIcon />
-                        </IconButton>
-                    </Paper>
+            <div>
+              {groups.map((windowGroup, index) => (
+                <Accordion variant="outlined" style={{ marginTop: 8, border: '1px solid #000' }}>
+                  <AccordionSummary
+                    key={/* index */ windowGroup.id}
+                    expandIcon={<ExpandMoreIcon />}
+                    aria-controls="panel1-content"
+                    id="panel1-header"
+                  >
+                    {windowGroup.name}
+                  </AccordionSummary>
+                  <AccordionDetails>
+                    <FormGroup>
+                      <FormControlLabel
+                        control={(
+                          <Checkbox
+                            checked={windowGroup.settings.zoom}
+                            onChange={
+                              // updateZoom(index)
+                              this.updateGroup(index, 'zoom')
+                            }
+                          />
+                        )}
+                        label="zoom/pan"
+                      />
 
-                    <div>
-                        {groups.map((windowGroup, index) => {
-                            return (
-                                <Accordion variant='outlined' style={{ marginTop: 8, border: '1px solid #000' }}>
-                                    <AccordionSummary
-                                        key={index}
-                                        expandIcon={<ExpandMoreIcon />}
-                                        aria-controls="panel1-content"
-                                        id="panel1-header"
-                                    >
-                                        {windowGroup.name}
-                                    </AccordionSummary>
-                                    <AccordionDetails>
-                                        <FormGroup>
-                                            <FormControlLabel control={
-                                                <Checkbox checked={windowGroup.settings.zoom} onChange={
-                                                    updateZoom(index)
-                                                } />
-                                            } label="zoom/pan" />
+                      <FormControlLabel
+                        control={(
+                          <Checkbox
+                            checked={windowGroup.settings.rotation}
+                            onChange={
+                              // updateRotation(index)
+                              this.updateGroup(index, 'rotation')
+                            }
+                          />
+                        )}
+                        label="rotation"
+                      />
 
-                                            <FormControlLabel control={
-                                                <Checkbox checked={windowGroup.settings.rotation}
-                                                    onChange={
-                                                        updateRotation(index)
-                                                    }
-                                                />
-                                            } label="rotation" />
+                      <FormControlLabel
+                        control={(
+                          <Checkbox
+                            checked={
+                              !windowGroup.settings.isBasicMode
+                            }
+                            onChange={
+                              // updateIsBasicMode(index)
+                              this.updateGroup(index, 'isBasicMode')
+                            }
+                          />
+                        )}
+                        label="advanced"
+                      />
+                    </FormGroup>
+                  </AccordionDetails>
+                  <AccordionActions>
+                    <IconButton color="error" sx={{ p: '10px' }} onClick={this.deleteGroup(index)}>
+                      <DeleteIcon />
+                    </IconButton>
+                  </AccordionActions>
+                </Accordion>
+              ))}
+            </div>
+          </DialogContent>
+        </Dialog>
+      </>
+    );
+  }
+}
 
-                                            <FormControlLabel control={
-                                                <Checkbox checked={
-                                                    !windowGroup.settings.isBasicMode}
-                                                    onChange={
-                                                        updateIsBasicMode(index)
-                                                    }
-                                                />
-                                            } label="advanced" />
-                                        </FormGroup>
-                                    </AccordionDetails>
-                                    <AccordionActions>
-                                        <IconButton color="error" sx={{ p: '10px' }} onClick={deleteGroup(index)}>
-                                            <DeleteIcon />
-                                        </IconButton>
-                                    </AccordionActions>
-                                </Accordion>
-                            );
-                        })}
-                    </div>
-                </DialogContent>
-            </Dialog>
-        </>
-    )
+MiradorSyncWindowsButton.propTypes = {
+  updateWorkspace: PropTypes.func.isRequired,
+  syncWindows: PropTypes.shape({
+    groups: PropTypes.arrayOf(
+      PropTypes.shape({
+        id: PropTypes.string.isRequired,
+        name: PropTypes.string.isRequired,
+        settings: PropTypes.shape({
+          zoom: PropTypes.bool.isRequired,
+          rotation: PropTypes.bool.isRequired,
+          isBasicMode: PropTypes.bool.isRequired,
+        }).isRequired,
+      }),
+    ),
+  }).isRequired,
 };
+
+MiradorSyncWindowsButton.defaultProps = {};
 
 export default MiradorSyncWindowsButton;

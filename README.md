@@ -1,11 +1,16 @@
 # mirador-sync-windows
 
 ![Node.js CI](https://github.com/nakamura196/mirador-sync-windows/workflows/Node.js%20CI/badge.svg)
-[![npm version](https://badge.fury.io/js/mirador-sync-windows.svg)](https://badge.fury.io/js/mirador-sync-windows)
 
-`mirador-sync-windows` is a [Mirador 3](https://github.com/projectmirador/mirador) plugin that adds image manipulation tools to the user interface.
+<!-- [![npm version](https://badge.fury.io/js/mirador-sync-windows.svg)](https://badge.fury.io/js/mirador-sync-windows) -->
 
-![Mirador image tools example](https://user-images.githubusercontent.com/1656824/88096343-b81f3b00-cb53-11ea-9b25-2536741a2824.png)
+`mirador-sync-windows` is a [Mirador 4](https://github.com/projectmirador/mirador) plugin that adds the ability to synchronize the windows of a Mirador instance. This plugin is useful for comparing multiple images side by side.
+
+This plugin is based on the [mirador-sync-windows](https://github.com/UCLALibrary/mirador-sync-windows) plugin by UCLA Library.
+
+![Mirador sync windows example](./assets/01.png)
+
+![Mirador sync windows example](./assets/02.png)
 
 ## Configuration
 
@@ -22,6 +27,7 @@ const config = {
   id: "demo",
   windows: [
     {
+      syncWindowsEnabled: true,
       manifestId: "https://purl.stanford.edu/sn904cj3429/iiif/manifest",
     },
   ],
@@ -30,7 +36,7 @@ const config = {
 
 ## Installing `mirador-sync-windows`
 
-`mirador-sync-windows` requires an instance of Mirador 3. See the [Mirador wiki](https://github.com/ProjectMirador/mirador/wiki) for examples of embedding Mirador within an application. See the [live demo's index.js](https://github.com/nakamura196/mirador-sync-windows/blob/master/demo/src/index.js) for an example of importing the `mirador-sync-windows` plugin and configuring the adapter.
+`mirador-sync-windows` requires an instance of Mirador 4. See the [Mirador wiki](https://github.com/ProjectMirador/mirador/wiki) for examples of embedding Mirador within an application. See the [live demo's index.js](https://github.com/nakamura196/mirador-sync-windows/blob/master/demo/src/index.js) for an example of importing the `mirador-sync-windows` plugin and configuring the adapter.
 
 ## Contribute
 

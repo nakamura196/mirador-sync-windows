@@ -3,20 +3,14 @@ import PropTypes from 'prop-types';
 import compose from 'lodash/flowRight';
 import { withSize } from 'react-sizeme';
 
-import { createDelaunay, transformPointAndCalculateZoom } from './utils';
-
 import { styled, alpha } from '@mui/material/styles';
 
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemButton from '@mui/material/ListItemButton';
-import ListItemIcon from '@mui/material/ListItemIcon';
-import ListItemText from '@mui/material/ListItemText';
 
 import DoDisturbIcon from '@mui/icons-material/DoDisturb';
-
-
-// import { updateViewport } from 'mirador/dist/es/src/state/actions/viewport';
+import { createDelaunay, transformPointAndCalculateZoom } from './utils';
 
 const SizeContainer = styled('div')(() => ({
   position: 'static !important',
@@ -76,37 +70,33 @@ const Root = styled('div')(({ small, theme: { palette } }) => {
   };
 });
 
-
-
-const interval = 200 // 0 // 20 // 200
+// const interval = 2000; // 200; // 0 // 20 // 200
 
 class MiradorSyncWindows extends Component {
-  constructor(props) {
-    super(props);
-    this.lastUpdateTime = 0;
-    this.updateConfigState = this.updateConfigState.bind(this);
+  static findCommonCids(windows, groupId) {
+    const groupWindows = windows.filter(
+      (window) => window.groupId === groupId && window.annotations3,
+    );
+    if (groupWindows.length === 0) return [];
+
+    const firstWindowAnnotations = groupWindows[0].annotations3;
+    return Object.keys(
+      firstWindowAnnotations,
+    ).filter(
+      (cid) => groupWindows.every((window) => cid in window.annotations3),
+    );
   }
 
-  componentDidUpdate(prevProps) {
-    const now = Date.now();
-    if (now - this.lastUpdateTime > interval) {
-      this.lastUpdateTime = now;
-
-      if (this.shouldPerformUpdate(prevProps)) {
-        {
-          this.updateViewConfig();
-        }
-      }
-    }
-  }
-
-  /**
- * ビュー更新前に実行すべきかどうかを判断する。
- * groupNameが存在し、ビューの設定（x, y, zoom）に変更がある場合にtrueを返す。
- */
-  shouldPerformUpdate(prevProps) {
-    const { viewConfig, groupName } = this.props;
-    return groupName && this.hasViewConfigChanged(prevProps.viewConfig, viewConfig);
+  static processAnnotations(annotations) {
+    const annotationMap = {};
+    annotations.forEach((annotation) => {
+      const xywh = annotation.target.split('=')[1].split(',').map(Number);
+      annotationMap[annotation.cid] = [
+        xywh[0] + xywh[2] / 2,
+        xywh[1] + xywh[3] / 2,
+      ];
+    });
+    return annotationMap;
   }
 
   /**
@@ -114,48 +104,65 @@ class MiradorSyncWindows extends Component {
    * x, y, または zoom レベルのどれか一つでも変わっていれば true を返す。
    */
 
-  hasViewConfigChanged(prevConfig, currentConfig) {
-    return prevConfig.x !== currentConfig.x || prevConfig.y !== currentConfig.y || prevConfig.zoom !== currentConfig.zoom || prevConfig.rotation !== currentConfig.rotation;
+  static hasViewConfigChanged(prevConfig, currentConfig) {
+    return prevConfig.x !== currentConfig.x
+      || prevConfig.y !== currentConfig.y
+      || prevConfig.zoom !== currentConfig.zoom;
+    // || prevConfig.rotation !== currentConfig.rotation;
   }
 
   /**
- * ビューの設定が変更されたかどうかを確認する。
- * グループ設定がズームを考慮する場合のみ、位置やズームレベルの変更をチェックする。
- */
-  shouldUpdateViewConfig(prevConfig) {
-
-    const { viewConfig, groups, groupName } = this.props;
-    const group = groups.find(g => g.name === groupName);
-    if (!group) return false;
-
-    return this.hasViewConfigChanged(prevConfig, viewConfig);
-  }
-
-  /**
-   * ビュー設定に基づいてコンポーネントの状態を更新する。
-   * 具体的な更新ロジックはこのメソッド内に実装される。
+   *
+   * @param {*} windows
+   * @param {*} groupId
+   * @returns
+   * @memberof MiradorSyncWindows
+   *
+   *
    */
-  updateViewConfig() {
-    const { config } = this.props;
+  static updateGroupWindows(windows, groupId) {
+    const commonCids = MiradorSyncWindows.findCommonCids(windows, groupId);
+    const updatedWindows = windows.map((originalWindow) => {
+      if (originalWindow.groupId === groupId) {
+        const controlPoints = commonCids.map((cid) => originalWindow.annotations3[cid]);
+        const delaunay = createDelaunay(controlPoints);
 
-    if (config.state.isSyncOk === undefined) {
-      this.updateConfigState(true);
-    }
+        return {
+          ...originalWindow,
+          data: { controlPoints, delaunay },
+        };
+      }
 
-    if (!config.state.isSyncOk) return;
+      return {
+        ...originalWindow,
+        data: null,
+      };
+    });
 
-    this.updateConfigState(false);
-    this.handleZoomChange();
-    setTimeout(() => this.updateConfigState(true), interval);
+    return updatedWindows;
   }
 
-  updateConfigState(isSyncOk) {
-    const { updateConfig } = this.props;
-    updateConfig({
-      state: {
-        isSyncOk
+  componentDidUpdate(prevProps) {
+    const { windowId, updateWorkspace, syncWindows } = this.props;
+
+    if (this.shouldPerformUpdate(prevProps)) {
+      const { locked } = syncWindows;
+
+      if (locked === '') {
+        updateWorkspace({
+          syncWindows: {
+            ...syncWindows,
+            locked: windowId,
+          },
+        });
+
+        this.updateViewConfig();
+
+        return;
       }
-    });
+
+      this.updateViewConfig();
+    }
   }
 
   /**
@@ -163,17 +170,30 @@ class MiradorSyncWindows extends Component {
  * グループ設定に基づき、基本モードまたは変換モードでウィンドウを更新する。
  */
   handleZoomChange() {
-    const { windowId, viewConfig, updateViewport, config, groupName, groups } = this.props;
+    const {
+      windowId, viewConfig, updateViewport, windowGroupId, syncWindows,
+    } = this.props;
+
+    const windows = syncWindows.windows || [];
+
+    const groups = syncWindows.groups || [];
+
     const centerImage = { x: viewConfig.x, y: viewConfig.y };
 
-    const group = groups.find(g => g.name === groupName);
+    const group = groups.find((g) => g.id === windowGroupId);
 
     // グループ設定に従い、基本モードの使用を判断
     const isBasicMode = group ? group.settings.isBasicMode : true;
     if (isBasicMode) {
       this.updateAllWindowsBasic(viewConfig);
     } else {
-      this.updateWindowsWithTransform(windowId, config, groupName, centerImage, updateViewport);
+      this.updateWindowsWithTransform(
+        windowId,
+        windows,
+        windowGroupId,
+        centerImage,
+        updateViewport,
+      );
     }
   }
 
@@ -182,18 +202,24 @@ class MiradorSyncWindows extends Component {
  * すべてのウィンドウに対して同じビュー設定を適用。
  */
   updateAllWindowsBasic(viewConfig) {
-    const { windowId, updateViewport, groups, groupName, config } = this.props;
+    const {
+      windowId, updateViewport, windowGroupId, syncWindows, /* windows, */
+    } = this.props;
 
-    const group = groups.find(g => g.name === groupName);
+    const windows = syncWindows.windows || [];
+
+    const groups = syncWindows.groups || [];
+
+    const group = groups.find((g) => g.id === windowGroupId);
 
     const groupSettings = group ? group.settings : {};
 
-    config.windows.forEach(window => {
+    // config.
+    windows.forEach((window) => {
       if (window.id !== windowId) {
+        if (window.windowGroupId !== windowGroupId) return;
 
-        if (window.groupName !== groupName) return;
-
-        const params = {}
+        const params = {};
 
         if (groupSettings.zoom) {
           params.x = viewConfig.x;
@@ -205,6 +231,8 @@ class MiradorSyncWindows extends Component {
           params.rotation = viewConfig.rotation;
         }
 
+        params.immediately = true;
+
         updateViewport(window.id, params);
       }
     });
@@ -214,15 +242,28 @@ class MiradorSyncWindows extends Component {
  * 変換モードでウィンドウを更新する。
  * ソースウィンドウのビュー設定に基づいて、他のウィンドウのビューを調整。
  */
-  updateWindowsWithTransform(windowId, config, groupName, centerImage, updateViewport) {
+  updateWindowsWithTransform(
+    windowId,
+    windows,
+    windowGroupId,
+    centerImage,
+    updateViewport,
+    syncWindows,
+  ) {
+    const groups = syncWindows.groups || [];
+
+    const group = groups.find((g) => g.id === windowGroupId);
+
+    const groupSettings = group ? group.settings : {};
+
     const { viewConfig } = this.props;
-    const sourceWindow = config.windows.find(window => window.id === windowId);
+    const sourceWindow = windows.find((window) => window.id === windowId);
     if (!sourceWindow || !sourceWindow.data) return;
 
     const { delaunay, controlPoints: controlPointsImage1 } = sourceWindow.data;
 
-    config.windows.forEach(targetWindow => {
-      if (targetWindow.id !== windowId && targetWindow.groupName === groupName) {
+    windows.forEach((targetWindow) => {
+      if (targetWindow.id !== windowId && targetWindow.groupId === windowGroupId) {
         if (!targetWindow.data) return;
 
         const controlPointsImage2 = targetWindow.data.controlPoints;
@@ -230,202 +271,281 @@ class MiradorSyncWindows extends Component {
           [centerImage.x, centerImage.y],
           delaunay,
           controlPointsImage1,
-          controlPointsImage2
+          controlPointsImage2,
         );
 
         if (transformResult) {
           const { transformedPoint, zoomRatio } = transformResult;
 
-          const params = {}
+          const params = {};
 
           if (groupSettings.zoom) {
-            params.x = transformedPoint[0]
-            params.y = transformedPoint[1]
-            params.zoom = zoomRatio * viewConfig.zoom
+            [params.x, params.y] = transformedPoint;
+            params.zoom = zoomRatio * viewConfig.zoom;
           }
 
+          /*
           if (groupSettings.rotation) {
             // 要調整
             // params.rotation = viewConfig.rotation;
           }
+          */
 
-          updateViewport(window.id, params);
+          params.immediately = true;
+
+          updateViewport(targetWindow.id, params);
         }
       }
     });
   }
 
-  handleChange(param) {
-    const { updateViewport, windowId } = this.props;
-    return (value) => updateViewport(windowId, { [param]: value });
+  /**
+   * ビュー設定に基づいてコンポーネントの状態を更新する。
+   * 具体的な更新ロジックはこのメソッド内に実装される。
+   */
+  updateViewConfig() {
+    this.handleZoomChange();
+    this.release();
   }
 
-  async selectGroup(name) {
-    const { updateWindow, windowId, window, config /*, updateConfig */ } = this.props;
+  /**
+ * ビュー更新前に実行すべきかどうかを判断する。
+ * groupIdが存在し、ビューの設定（x, y, zoom）に変更がある場合にtrueを返す。
+ */
+  shouldPerformUpdate(prevProps) {
+    const { viewConfig, windowGroupId } = this.props;
+    return windowGroupId
+      && MiradorSyncWindows.hasViewConfigChanged(prevProps.viewConfig, viewConfig);
+  }
 
-    if (window.groupName === name) {
+  async selectGroup(selectedGroupId) {
+    const {
+      updateWindow, windowId, windowGroupId, updateWorkspace, syncWindows, windows,
+    } = this.props;
+
+    if (windowGroupId === selectedGroupId) {
       return;
     }
 
-    updateWindow(windowId, { groupName: name });
+    updateWindow(windowId, { windowGroupId: selectedGroupId });
 
-    for (const window of config.windows) {
+    const copiedWindows = syncWindows.windows || [...windows];
 
+    copiedWindows.forEach((window) => {
       if (window.id === windowId) {
-        window.groupName = name
+        // Creating a new object and copying properties from the original window object
+        const updatedWindow = { ...window, windowGroupId: selectedGroupId };
+        // Find the index of the current window in the array
+        const index = copiedWindows.indexOf(window);
+        // Replace the old window object with the updated one
+        copiedWindows[index] = updatedWindow;
       }
-    }
+    });
 
-    await this.fetchAndStoreAnnotations(config, windowId);
+    await this.fetchAndStoreAnnotations(copiedWindows, windowId);
 
-    if (name) {
-      this.updateGroupWindows(config, name);
-    }
+    const updatedWindows = MiradorSyncWindows.updateGroupWindows(copiedWindows, selectedGroupId);
 
-    /*
-    updateConfig({
-      state: {
-        windows: config.windows
-      }
-    })
-    */
+    updateWorkspace({
+      syncWindows: {
+        ...syncWindows,
+        locked: '',
+        windows: updatedWindows,
+      },
+    });
   }
 
-  async fetchAndStoreAnnotations(config, windowId) {
-    for (const window of config.windows) {
+  /**
+   * ウィンドウのアノテーションを取得し、保存する。
+   * ウィンドウのアノテーションが存在しない場合のみ取得する。
+   * アノテーションは、ウィンドウの annotations2 プロパティに保存される。
+   * @param {Object} config - Mirador の設定オブジェクト
+   * @param {Array} windows - ウィンドウの配列
+   * @param {String} windowId - ウィンドウの ID
+   * @returns {Promise<void>}
+   * @memberof MiradorSyncWindows
+   * @private
+   * @async
+   * @method
+   * @instance
+   * @memberof MiradorSyncWindows
+   * @private
+   * @async
+   * */
+
+  async fetchAndStoreAnnotations(windows, windowId) {
+    // Collect all promises
+    const fetchPromises = windows.map((window) => {
       if (window.id === windowId && !window.annotations2) {
-        try {
-          const response = await fetch(window.manifestId);
-          const manifest = await response.json();
-          if (manifest && manifest.items) {
-            const annotations2 = {};
-            const annotations3 = {};
-            for (const canvas of manifest.items) {
-              if (canvas.annotations) {
-                const annotationMap = this.processAnnotations(canvas.annotations[0]["items"]);
-                annotations2[canvas.id] = annotationMap;
-                // annotations3[canvas.id] = annotationMap;
+        return this.fetchAnnotationsForWindow(window);
+      }
+      return Promise.resolve();
+    });
 
-                for (const [cid, xy] of Object.entries(annotationMap)) {
-                  annotations3[cid] = xy;
-                }
+    // Await all promises simultaneously
+    await Promise.all(fetchPromises);
+  }
 
+  async fetchAnnotationsForWindow(/* window */ originalWindow) {
+    try {
+      const response = await fetch(originalWindow.manifestId);
+      const manifest = await response.json();
+      if (manifest && manifest.items) {
+        const annotations2 = {};
+        const annotations3 = {};
 
-              }
-            }
-            window.annotations2 = annotations2;
-            window.annotations3 = annotations3;
+        manifest.items.forEach((canvas) => {
+          if (canvas.annotations) {
+            const annotationMap = this.processAnnotations(canvas.annotations[0].items);
+            annotations2[canvas.id] = annotationMap;
+
+            // Object.entries() を使用して、annotationMap を反復処理します
+            Object.entries(annotationMap).forEach(([cid, xy]) => {
+              annotations3[cid] = xy;
+            });
           }
-        } catch (error) {
-          console.error("Failed to fetch annotations:", error);
-        }
+        });
+
+        const newWindow = {
+          ...originalWindow,
+          annotations2,
+          annotations3,
+        };
+
+        return newWindow;
       }
+
+      return originalWindow;
+    } catch (error) {
+      return originalWindow;
     }
   }
 
-  processAnnotations(annotations) {
-    const annotationMap = {};
-    for (const annotation of annotations) {
-      const xywh = annotation.target.split("=")[1].split(",").map(Number);
-      annotationMap[annotation.cid] = [
-        xywh[0] + xywh[2] / 2,
-        xywh[1] + xywh[3] / 2
-      ];
-    }
-    return annotationMap;
-  }
+  release() {
+    const { updateWorkspace, syncWindows } = this.props;
 
-  updateGroupWindows(config, groupName) {
-    const commonCids = this.findCommonCids(config, groupName);
-    for (const window of config.windows) {
-      if (window.groupName === groupName) {
-        const controlPoints = commonCids.map(cid => window.annotations3[cid]);
-        const delaunay = createDelaunay(controlPoints);
-        window.data = { controlPoints, delaunay };
-      } else {
-        window.data = null;
-      }
-    }
-  }
-
-  findCommonCids(config, groupName) {
-    const groupWindows = config.windows.filter(window => window.groupName === groupName && window.annotations3);
-    if (groupWindows.length === 0) return [];
-
-    const firstWindowAnnotations = groupWindows[0].annotations3;
-    return Object.keys(firstWindowAnnotations).filter(cid =>
-      groupWindows.every(window => cid in window.annotations3)
-    );
+    updateWorkspace({
+      syncWindows: {
+        ...syncWindows,
+        locked: '',
+      },
+    });
   }
 
   render() {
     const {
       enabled,
       viewer,
-      groups,
-      groupName,
+      syncWindows,
+      windowGroupId,
+      t,
     } = this.props;
 
     if (!viewer || !enabled) return null;
 
-    return (
-      <React.Fragment>
-        <SizeContainer>
-          <Root className="MuiPaper-elevation4">
-            <React.Fragment>
-              <List>
+    const groups = syncWindows.groups || [];
 
-                <ListItem disablePadding onClick={
-                  () => this.selectGroup('')
-                }>
-                  <ListItemButton selected={
-                    !groupName
-                  }>
-                    <DoDisturbIcon style={{ marginRight: 8 }} /> no group
+    return (
+      <SizeContainer>
+        <Root className="MuiPaper-elevation4">
+
+          <List>
+
+            <ListItem
+              disablePadding
+              onClick={
+                () => this.selectGroup('')
+              }
+            >
+              <ListItemButton selected={
+                !windowGroupId
+              }
+              >
+                <DoDisturbIcon style={{ marginRight: 8 }} />
+                {' '}
+                {t('no_group')}
+              </ListItemButton>
+            </ListItem>
+
+            {groups.map((group) => {
+              const isSelected = group.id === windowGroupId;
+              return (
+                <ListItem disablePadding key={group.id}>
+                  <ListItemButton
+                    onClick={
+                      () => this.selectGroup(group.id)
+                    }
+                    selected={
+                      isSelected
+                    }
+                  >
+                    {group.name}
                   </ListItemButton>
                 </ListItem>
-
-                {groups.map((group, i) => {
-                  const isSelected = group.name === groupName;
-                  return (
-                    <ListItem disablePadding key={i}>
-                      <ListItemButton onClick={
-                        () => this.selectGroup(group.name)
-                      } selected={
-                        isSelected
-                      }>
-                        {group.name}
-                      </ListItemButton>
-                    </ListItem>
-                  )
-                })}
-              </List>
-            </React.Fragment>
-          </Root>
-        </SizeContainer>
-      </React.Fragment>
+              );
+            })}
+          </List>
+        </Root>
+      </SizeContainer>
     );
   }
 }
 
 MiradorSyncWindows.propTypes = {
   enabled: PropTypes.bool,
-  size: PropTypes.object, // eslint-disable-line react/forbid-prop-types
   t: PropTypes.func.isRequired,
   updateViewport: PropTypes.func.isRequired,
   updateWindow: PropTypes.func.isRequired,
   viewer: PropTypes.object, // eslint-disable-line react/forbid-prop-types
   viewConfig: PropTypes.object, // eslint-disable-line react/forbid-prop-types
   windowId: PropTypes.string.isRequired,
-  groups: PropTypes.array, // eslint-disable-line react/forbid-prop-types
+  windowGroupId: PropTypes.string,
+  windows: PropTypes.arrayOf(
+    PropTypes.shape({
+      id: PropTypes.string.isRequired,
+      windowGroupId: PropTypes.string,
+      manifestId: PropTypes.string.isRequired,
+      annotations2: PropTypes.object, // eslint-disable-line react/forbid-prop-types
+      annotations3: PropTypes.object, // eslint-disable-line react/forbid-prop-types
+      data: PropTypes.object, // eslint-disable-line react/forbid-prop-types
+    }),
+  ),
+
+  updateWorkspace: PropTypes.func.isRequired,
+
+  syncWindows: PropTypes.shape({
+    groups: PropTypes.arrayOf(
+      PropTypes.shape({
+        id: PropTypes.string.isRequired,
+        name: PropTypes.string.isRequired,
+        settings: PropTypes.shape({
+          zoom: PropTypes.bool.isRequired,
+          rotation: PropTypes.bool.isRequired,
+          isBasicMode: PropTypes.bool.isRequired,
+        }).isRequired,
+      }),
+    ),
+    windows: PropTypes.arrayOf(
+      PropTypes.shape({
+        id: PropTypes.string.isRequired,
+        windowGroupId: PropTypes.string,
+        manifestId: PropTypes.string.isRequired,
+        annotations2: PropTypes.object, // eslint-disable-line react/forbid-prop-types
+        annotations3: PropTypes.object, // eslint-disable-line react/forbid-prop-types
+        data: PropTypes.object, // eslint-disable-line react/forbid-prop-types
+      }),
+    ),
+    locked: PropTypes.string,
+  }).isRequired,
+
 };
 
 MiradorSyncWindows.defaultProps = {
   enabled: true,
-  size: {},
   viewer: undefined,
   viewConfig: {},
-  groups: [],
+  windows: [],
+  windowGroupId: '',
 };
 
 // Export without wrapping HOC for testing.

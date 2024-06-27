@@ -1,39 +1,29 @@
-import * as actions from 'mirador/dist/es/src/state/actions';
-import { getWindowConfig, getViewer, getContainerId, getConfig } from 'mirador/dist/es/src/state/selectors';
+import * as actions from '@nakamura196/mirador/dist/es/src/state/actions';
+import {
+  getWindowConfig, getViewer, getContainerId, getConfig,
+  getWorkspace,
+} from '@nakamura196/mirador/dist/es/src/state/selectors';
 import MiradorSyncWindows from './plugins/MiradorSyncWindows';
 import MiradorSyncWindowsMenuItem from './plugins/MiradorSyncWindowsMenuItem';
 import MiradorSyncWindowsButton from './plugins/MiradorSyncWindowsButton';
 import translations from './translations';
 
-
 export const MiradorSyncWindowsPlugin = [
   {
     target: 'OpenSeadragonViewer',
     mapDispatchToProps: {
-      updateConfig: actions.updateConfig,
       updateWindow: actions.updateWindow,
       updateViewport: actions.updateViewport,
+      updateWorkspace: actions.updateWorkspace,
     },
     mapStateToProps: (state, { windowId }) => ({
       containerId: getContainerId(state),
       enabled: getWindowConfig(state, { windowId }).syncWindowsEnabled || false,
       viewConfig: getViewer(state, { windowId }) || {},
-      groups: getConfig(state).state.groups || [
-        /*
-        {
-          name: "test",
-          settings: {
-            zoom: true,
-            rotation: true,
-            isBasicMode: false
-          }
-        }
-          */
-      ],
-      groupName: getWindowConfig(state, { windowId }).groupName || "",
+      windowGroupId: getWindowConfig(state, { windowId }).windowGroupId || '',
       zoom: getViewer(state, { windowId })?.zoom || 0,
-      window: getWindowConfig(state, { windowId }),
-      config: getConfig(state),
+      windows: getConfig(state).windows,
+      syncWindows: getWorkspace(state).syncWindows || {},
     }),
     mode: 'add',
     component: MiradorSyncWindows,
@@ -57,10 +47,10 @@ export const MiradorSyncWindowsPlugin = [
     component: MiradorSyncWindowsButton,
     mode: 'add',
     mapDispatchToProps: {
-      updateConfig: actions.updateConfig
+      updateWorkspace: actions.updateWorkspace,
     },
     mapStateToProps: (state) => ({
-      groups: getConfig(state).state.groups || []
+      syncWindows: getWorkspace(state).syncWindows || {},
     }),
-  }
+  },
 ];

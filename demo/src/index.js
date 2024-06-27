@@ -1,6 +1,9 @@
-import Mirador from 'mirador/dist/es/src/index';
+import Mirador from '@nakamura196/mirador/dist/es/src/index';
 import { MiradorSyncWindowsPlugin } from '../../src';
-// import { miradorImageToolsPlugin } from '../../mirador-image-tools/src';
+// import { miradorRotationPlugin } from '/Users/nakamura/git/mirador/mirador-rotation-plugin/src';
+// import { miradorRotationPlugin } from '../../mirador-rotation-plugin/es';
+// import { miradorRotationPlugin } from "mirador-rotation"
+import { miradorRotationPlugin } from "mirador-rotation"
 
 
 const config = {
@@ -9,15 +12,15 @@ const config = {
     {
       id: "first",
       syncWindowsEnabled: true,
-      imageToolsEnabled: true,
-      imageToolsOpen: true,
+      rotationEnabled: true,
+      rotationOpen: true,
       manifestId: "https://nakamura196.github.io/mirador2-sync-windows/data/examples/org.json" // 'https://iiif.harvardartmuseums.org/manifests/object/299843',
     },
     {
       id: "second",
       syncWindowsEnabled: true,
-      imageToolsEnabled: true,
-      imageToolsOpen: true,
+      rotationEnabled: true,
+      rotationOpen: true,
       manifestId: 'https://nakamura196.github.io/mirador2-sync-windows/data/examples/inf.json',
     },
   ],
@@ -40,5 +43,5 @@ const config = {
 
 Mirador.viewer(config, [
   ...MiradorSyncWindowsPlugin,
-  // miradorImageToolsPlugin,
+  miradorRotationPlugin
 ]);

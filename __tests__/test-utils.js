@@ -5,8 +5,8 @@ import PropTypes from 'prop-types';
 import { createStore, applyMiddleware } from 'redux';
 import { thunk } from 'redux-thunk';
 import { createTheme, ThemeProvider, StyledEngineProvider } from '@mui/material/styles';
-import createRootReducer from 'mirador/dist/es/src/state/reducers/rootReducer';
-import settings from 'mirador/dist/es/src/config/settings';
+import createRootReducer from '@nakamura196/mirador/dist/es/src/state/reducers/rootReducer';
+import settings from '@nakamura196/mirador/dist/es/src/config/settings';
 
 const rootReducer = createRootReducer();
 const theme = createTheme(settings.theme);

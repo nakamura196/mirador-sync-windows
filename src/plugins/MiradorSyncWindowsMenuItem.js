@@ -19,7 +19,7 @@ const MiradorSyncWindowsMenuItem = ({
         <AccountTree />
       </ListItemIcon>
       <ListItemText primaryTypographyProps={{ variant: 'body1' }}>
-        {enabled ? t('hide') : t('show')}
+        {enabled ? t('hide_sync') : t('show_sync')}
       </ListItemText>
     </MenuItem>
   );
