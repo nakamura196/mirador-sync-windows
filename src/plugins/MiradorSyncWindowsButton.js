@@ -69,7 +69,7 @@ class MiradorSyncWindowsButton extends Component {
       settings: {
         zoom: true,
         rotation: true,
-        isBasicMode: true,
+        isAdvanced: false,
       },
     });
 
@@ -112,6 +112,7 @@ class MiradorSyncWindowsButton extends Component {
   render() {
     const { syncWindows } = this.props;
     const { open, windowGroupName } = this.state;
+
     const groups = syncWindows.groups || [];
 
     return (
@@ -200,11 +201,10 @@ class MiradorSyncWindowsButton extends Component {
                         control={(
                           <Checkbox
                             checked={
-                              !windowGroup.settings.isBasicMode
+                              windowGroup.settings.isAdvanced
                             }
                             onChange={
-                              // updateIsBasicMode(index)
-                              this.updateGroup(index, 'isBasicMode')
+                              this.updateGroup(index, 'isAdvanced')
                             }
                           />
                         )}
@@ -237,11 +237,12 @@ MiradorSyncWindowsButton.propTypes = {
         settings: PropTypes.shape({
           zoom: PropTypes.bool.isRequired,
           rotation: PropTypes.bool.isRequired,
-          isBasicMode: PropTypes.bool.isRequired,
+          isAdvanced: PropTypes.bool.isRequired,
         }).isRequired,
       }),
     ),
   }).isRequired,
+  t: PropTypes.func.isRequired,
 };
 
 MiradorSyncWindowsButton.defaultProps = {};

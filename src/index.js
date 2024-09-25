@@ -1,6 +1,6 @@
 import * as actions from '@nakamura196/mirador/dist/es/src/state/actions';
 import {
-  getWindowConfig, getViewer, getContainerId, getConfig,
+  getWindowConfig, getViewer, getContainerId,
   getWorkspace,
 } from '@nakamura196/mirador/dist/es/src/state/selectors';
 import MiradorSyncWindows from './plugins/MiradorSyncWindows';
@@ -22,8 +22,10 @@ export const MiradorSyncWindowsPlugin = [
       viewConfig: getViewer(state, { windowId }) || {},
       windowGroupId: getWindowConfig(state, { windowId }).windowGroupId || '',
       zoom: getViewer(state, { windowId })?.zoom || 0,
-      windows: getConfig(state).windows,
       syncWindows: getWorkspace(state).syncWindows || {},
+      focusedWindowId: getWorkspace(state).focusedWindowId || {},
+      workspace: getWorkspace(state) || {},
+      windowsAll: state.windows,
     }),
     mode: 'add',
     component: MiradorSyncWindows,
@@ -33,7 +35,7 @@ export const MiradorSyncWindowsPlugin = [
   },
   {
     target: 'WindowTopBarPluginMenu',
-    component: MiradorSyncWindowsMenuItem,
+
     mode: 'add',
     mapDispatchToProps: {
       updateWindow: actions.updateWindow,
@@ -41,10 +43,14 @@ export const MiradorSyncWindowsPlugin = [
     mapStateToProps: (state, { windowId }) => ({
       enabled: getWindowConfig(state, { windowId }).syncWindowsEnabled || false,
     }),
+    component: MiradorSyncWindowsMenuItem,
+    config: {
+      translations,
+    },
   },
   {
     target: 'WorkspaceControlPanelButtons',
-    component: MiradorSyncWindowsButton,
+
     mode: 'add',
     mapDispatchToProps: {
       updateWorkspace: actions.updateWorkspace,
@@ -52,5 +58,9 @@ export const MiradorSyncWindowsPlugin = [
     mapStateToProps: (state) => ({
       syncWindows: getWorkspace(state).syncWindows || {},
     }),
+    component: MiradorSyncWindowsButton,
+    config: {
+      translations,
+    },
   },
 ];
