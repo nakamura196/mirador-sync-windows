@@ -40,7 +40,7 @@ if (!queryConfig) {
         settings: {
           zoom: true,
           rotation: true,
-          isAdvanced: true,
+          isAdvanced: false,
         },
       },
     ],
