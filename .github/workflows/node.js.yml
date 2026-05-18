@@ -30,13 +30,19 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+      - name: Install pnpm
+        uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v4.4.0
+        with:
+          version: 8
       - name: Use Node.js
         uses: actions/setup-node@v4
+        with:
+          cache: pnpm
       - run: npm install -g codecov
-      - run: npm install
+      - run: pnpm install --frozen-lockfile
       # - run: npm test
       # - run: codecov
-      - run: npm run build:demo
+      - run: pnpm run build:demo
       - name: Setup Pages
         uses: actions/configure-pages@v5
       - name: Upload artifact
