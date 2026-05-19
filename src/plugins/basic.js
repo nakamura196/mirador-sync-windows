@@ -28,7 +28,9 @@ const updateAllWindowsBasic = (
         params.rotation = viewConfig.rotation;
       }
 
-      // params.immediately = true;
+      // 追従ウィンドウは即座にスナップさせる。OSD のスプリングアニメーション
+      // （既定 ~1.2 秒）を挟むと操作側ウィンドウから遅れて見えるため。
+      params.immediately = true;
 
       updateViewport(window.id, params);
     }

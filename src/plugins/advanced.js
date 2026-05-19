@@ -165,7 +165,8 @@ const updateWindowsWithTransform = async (
           params.rotation = viewConfig.rotation + rotationAngle; // viewConfig.rotation;
         }
 
-        // params.immediately = true;
+        // 追従ウィンドウは即座にスナップさせる（同期遅延の防止）。
+        params.immediately = true;
 
         updateViewport(targetWindow.id, params);
       }

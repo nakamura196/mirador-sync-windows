@@ -86,27 +86,104 @@ class MiradorSyncWindows extends Component {
     // || prevConfig.rotation !== currentConfig.rotation;
   }
 
+  constructor(props) {
+    super(props);
+    this.handleViewerAnimation = this.handleViewerAnimation.bind(this);
+    // 現在 'animation' ハンドラを取り付けている OpenSeadragon viewer インスタンス。
+    this.viewerWithHandler = null;
+    // 1 フレームにつき 1 回だけ同期するためのガード。
+    this.animationFramePending = false;
+  }
+
+  componentDidMount() {
+    this.attachViewerHandler();
+  }
+
   componentDidUpdate(prevProps) {
-    const { windowId, focusedWindowId } = this.props;
+    const { windowId, focusedWindowId, viewConfig } = this.props;
+
+    // viewer インスタンスは差し替わることがある（ウィンドウ再生成時など）。
+    this.attachViewerHandler();
 
     const isShouldPerformUpdate = this.shouldPerformUpdate(prevProps);
 
     if (isShouldPerformUpdate) {
       if (focusedWindowId === windowId) {
-        this.handleZoomChange();
+        this.syncFromViewConfig(viewConfig);
       }
     }
   }
 
+  componentWillUnmount() {
+    this.detachViewerHandler();
+  }
+
   /**
- * ビューのズームレベルに基づいてウィンドウの更新を行う。
- * グループ設定に基づき、基本モードまたは変換モードでウィンドウを更新する。
- */
-  async handleZoomChange() {
+   * OSD の 'animation' イベントに応じて、操作中ウィンドウの現在のビューポートを
+   * 読み取り追従ウィンドウへ同期する。複数イベントは 1 フレーム 1 回に集約する。
+   */
+  handleViewerAnimation() {
     const {
-      windowId, viewConfig, updateViewport, windowGroupId, syncWindows,
+      viewer, windowId, focusedWindowId, windowGroupId,
+    } = this.props;
+
+    // 同期を配信するのは「ユーザーが今まさに操作しているウィンドウ」のみ。
+    if (!windowGroupId || focusedWindowId !== windowId) return;
+    if (!viewer || !viewer.viewport) return;
+    if (this.animationFramePending) return;
+
+    this.animationFramePending = true;
+    // eslint-disable-next-line no-undef
+    window.requestAnimationFrame(() => {
+      this.animationFramePending = false;
+      const { viewport } = viewer;
+      if (!viewport) return;
+      const center = viewport.getCenter(true);
+      this.syncFromViewConfig({
+        x: center.x,
+        y: center.y,
+        zoom: viewport.getZoom(true),
+        rotation: typeof viewport.getRotation === 'function' ? viewport.getRotation() : 0,
+      });
+    });
+  }
+
+  /**
+   * 操作中ウィンドウの OpenSeadragon viewer に 'animation' ハンドラを取り付ける。
+   * Redux の viewConfig は OSD の animation-finish 時にしか更新されないため、
+   * それだけに頼ると追従ウィンドウは「操作を止めるまで動かない」。'animation'
+   * イベント（ドラッグ/ズームの各フレームで発火）を直接拾うことで遅延をなくす。
+   */
+  attachViewerHandler() {
+    const { viewer } = this.props;
+    if (viewer === this.viewerWithHandler) return;
+    this.detachViewerHandler();
+    if (viewer && typeof viewer.addHandler === 'function') {
+      viewer.addHandler('animation', this.handleViewerAnimation);
+      this.viewerWithHandler = viewer;
+    }
+  }
+
+  /** 取り付けた 'animation' ハンドラを解除する。 */
+  detachViewerHandler() {
+    const viewer = this.viewerWithHandler;
+    if (viewer && typeof viewer.removeHandler === 'function') {
+      viewer.removeHandler('animation', this.handleViewerAnimation);
+    }
+    this.viewerWithHandler = null;
+  }
+
+  /**
+ * 指定された viewConfig（x, y, zoom, rotation）に基づき、同一グループの
+ * 他ウィンドウを同期する。グループ設定に従い基本モード／変換モードを切り替える。
+ */
+  async syncFromViewConfig(viewConfig) {
+    const {
+      windowId, updateViewport, windowGroupId, syncWindows,
       updateWorkspace, windowsAll,
     } = this.props;
+
+    if (!windowGroupId || !viewConfig) return;
 
     const windowsMap = windowsAll;
 
@@ -114,7 +191,9 @@ class MiradorSyncWindows extends Component {
 
     if (syncWindows.windows) {
       Object.values(syncWindows.windows).forEach((window) => {
-        windowsMap[window.id].data = window.data;
+        if (windowsMap[window.id]) {
+          windowsMap[window.id].data = window.data;
+        }
       });
     }
 
