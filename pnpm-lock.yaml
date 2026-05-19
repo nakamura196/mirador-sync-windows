@@ -153,16 +153,16 @@ devDependencies:
     specifier: ^0.14.2
     version: 0.14.2
   terser-webpack-plugin:
-    specifier: ^5.3.11
+    specifier: ^5.6.0
     version: 5.6.0(webpack@5.106.2)
   webpack:
-    specifier: ^5.94.0
+    specifier: ^5.106.2
     version: 5.106.2(webpack-cli@5.1.4)
   webpack-cli:
     specifier: ^5.1.4
     version: 5.1.4(webpack-dev-server@5.2.4)(webpack@5.106.2)
   webpack-dev-server:
-    specifier: ^5.2.0
+    specifier: ^5.2.4
     version: 5.2.4(tslib@2.8.1)(webpack-cli@5.1.4)(webpack@5.106.2)
 
 packages:
@@ -4041,7 +4041,7 @@ packages:
     engines: {node: '>= 8'}
     dependencies:
       normalize-path: 3.0.0
-      picomatch: 2.3.1
+      picomatch: 2.3.2
     dev: true
 
   /argparse@1.0.10:
@@ -7385,7 +7385,7 @@ packages:
       chalk: 4.1.2
       ci-info: 3.9.0
       graceful-fs: 4.2.11
-      picomatch: 2.3.1
+      picomatch: 2.3.2
     dev: true
 
   /jest-validate@29.7.0:
@@ -7777,7 +7777,7 @@ packages:
     engines: {node: '>=8.6'}
     dependencies:
       braces: 3.0.3
-      picomatch: 2.3.1
+      picomatch: 2.3.2
     dev: true
 
   /mime-db@1.52.0:
@@ -8224,8 +8224,8 @@ packages:
   /picocolors@1.1.1:
     resolution: {integrity: sha512-xceH2snhtb5M9liqDsmEw56le376mTZkEX/jEb/RxNFyegNul7eNslCXP9FDj/Lcu0X8KEyMceP2ntpaHrDEVA==}
 
-  /picomatch@2.3.1:
-    resolution: {integrity: sha512-JU3teHTNjmE2VCGFzuY8EXzCDVwEqB2a8fsIvwaStHhAWJEeVd1o1QD80CU6+ZdEXXSLbSsuLwJjkCBWqRQUVA==}
+  /picomatch@2.3.2:
+    resolution: {integrity: sha512-V7+vQEJ06Z+c5tSye8S+nHUfI51xoXIXjHQ99cQtKUkQqqO1kO/KCJUfZXuB47h/YBlDhah2H3hdUGXn8ie0oA==}
     engines: {node: '>=8.6'}
     dev: true
 
@@ -8737,7 +8737,7 @@ packages:
     engines: {node: '>=8.10.0'}
     requiresBuild: true
     dependencies:
-      picomatch: 2.3.1
+      picomatch: 2.3.2
     dev: true
 
   /rechoir@0.8.0:
