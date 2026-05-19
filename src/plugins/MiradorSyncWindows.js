@@ -1,6 +1,5 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import compose from 'lodash/flowRight';
 import { withSize } from 'react-sizeme';
 
 import { styled, alpha } from '@mui/material/styles';
@@ -351,4 +350,4 @@ MiradorSyncWindows.defaultProps = {
 // Export without wrapping HOC for testing.
 export const TestablesyncWindows = MiradorSyncWindows;
 
-export default compose(withSize())(MiradorSyncWindows);
+export default withSize()(MiradorSyncWindows);
