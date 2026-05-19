@@ -58,7 +58,10 @@ module.exports = (api) => ({
         regenerator: true,
       },
     ],
-    [
+    // regenerator は production ビルド（IE/Edge 互換）専用。test 環境では
+    // Node ネイティブの generator/async で十分で、有効にすると d3-delaunay の
+    // generator 内 for-of でトランスパイルが失敗するため除外する。
+    !api.env('test') && [
       '@babel/plugin-transform-regenerator',
       {
         async: false,

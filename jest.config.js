@@ -10,9 +10,11 @@ module.exports = {
   setupFilesAfterEnv: [
     '<rootDir>/setupJest.js',
   ],
-  // Ignore Mirador code from jest transforms
+  // Transform Mirador's ESM build (and the react-dnd family) instead of
+  // ignoring it. The allowlist also accepts pnpm's `.pnpm/` store path and the
+  // scoped `@nakamura196/mirador` fork, which the previous pattern missed.
   transformIgnorePatterns: [
-    '<rootDir>/node_modules/(?!mirador|@react-dnd|react-dnd|dnd-core|react-dnd-html5-backend|dnd-multi-backend|rdndmb-html5-to-touch)',
+    'node_modules/(?!\\.pnpm/|@nakamura196/mirador|mirador|d3-delaunay|delaunator|robust-predicates|@react-dnd|react-dnd|dnd-core|react-dnd-html5-backend|dnd-multi-backend|rdndmb-html5-to-touch)',
   ],
   testEnvironment: "jsdom",
   testPathIgnorePatterns: [

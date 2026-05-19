@@ -31,7 +31,6 @@
     "@emotion/styled": "^11.11.5",
     "@mui/icons-material": "^5.15.20",
     "d3-delaunay": "^6.0.4",
-    "i": "^0.3.7",
     "lodash": "^4.17.21",
     "mirador-rotation": "^4.0.1",
     "prop-types": "^15.8.1",

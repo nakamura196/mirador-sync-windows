@@ -190,7 +190,7 @@ function transformPointAndCalculateZoom(
     controlPointsImage2[j],
   );
 
-  return { transformedPoint, zoomRatio: averageRatio * size1 / size2, rotationAngle };
+  return { transformedPoint, zoomRatio: (averageRatio * size1) / size2, rotationAngle };
 }
 
 function createDelaunay(controlPoints) {
@@ -311,7 +311,7 @@ const getWindowData = async (manifestId) => {
 
           const cidMap = {};
 
-          Object.entries(annotationMap).forEach(([_, annotation]) => {
+          Object.values(annotationMap).forEach((annotation) => {
             if (annotation.cid) {
               const xywh = annotation.target
                 .split('=')[1]

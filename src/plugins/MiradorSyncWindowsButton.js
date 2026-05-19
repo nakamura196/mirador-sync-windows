@@ -242,7 +242,6 @@ MiradorSyncWindowsButton.propTypes = {
       }),
     ),
   }).isRequired,
-  t: PropTypes.func.isRequired,
 };
 
 MiradorSyncWindowsButton.defaultProps = {};
