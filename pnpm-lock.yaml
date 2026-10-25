@@ -153,16 +153,16 @@ devDependencies:
     specifier: ^0.14.2
     version: 0.14.2
   terser-webpack-plugin:
-    specifier: ^5.3.11
+    specifier: ^5.6.0
     version: 5.6.0(webpack@5.106.2)
   webpack:
-    specifier: ^5.94.0
+    specifier: ^5.106.2
     version: 5.106.2(webpack-cli@5.1.4)
   webpack-cli:
     specifier: ^5.1.4
     version: 5.1.4(webpack-dev-server@5.2.4)(webpack@5.106.2)
   webpack-dev-server:
-    specifier: ^5.2.0
+    specifier: ^5.2.4
     version: 5.2.4(tslib@2.8.1)(webpack-cli@5.1.4)(webpack@5.106.2)
 
 packages:
@@ -2935,7 +2935,7 @@ packages:
       '@redux-devtools/extension': 3.3.0(redux@5.0.1)
       classnames: 2.5.1
       deepmerge: 4.3.1
-      dompurify: 3.1.5
+      dompurify: 3.4.5
       i18next: 23.11.5
       lodash: 4.17.21
       manifesto.js: 4.2.17
@@ -3572,6 +3572,11 @@ packages:
   /@types/tough-cookie@4.0.5:
     resolution: {integrity: sha512-/Ad8+nIOV7Rl++6f1BdKxFSMgmoqEoYbHRpPcx3JEfv8VRsQe9Z4mCXeJBzxs7mbHY/XOZZuXlRNfhpVPbs6ZA==}
     dev: true
+
+  /@types/trusted-types@2.0.7:
+    resolution: {integrity: sha512-ScaPdn1dQczgbl0QFTeTOmVHFULt394XJgOQNoyVhZ6r2vLnMLJfBPd53SB52T/3G36VI1/g2MZaX0cwDuXsfw==}
+    requiresBuild: true
+    optional: true
 
   /@types/use-sync-external-store@0.0.3:
     resolution: {integrity: sha512-EwmlvuaxPNej9+T4v5AuBPJa2x2UOJVdjCtDHgcDqitUeOtjnJKJ+apYjVcAoBEMjKW1VVFGZLUb5+qqa09XFA==}
@@ -5171,8 +5176,10 @@ packages:
       domelementtype: 2.3.0
     dev: true
 
-  /dompurify@3.1.5:
-    resolution: {integrity: sha512-lwG+n5h8QNpxtyrJW/gJWckL+1/DQiYMX8f7t8Z2AZTPw1esVrqjI63i7Zc2Gz0aKzLVMYC1V1PL/ky+aY/NgA==}
+  /dompurify@3.4.5:
+    resolution: {integrity: sha512-OrwIBKsdNSVEeubdJ1HBv/wNENRM9ytAVCv7YXt//A3vPdVMNuACRqK9mXCGCBW2ln7BT/A4X0jXHo2Gu89miA==}
+    optionalDependencies:
+      '@types/trusted-types': 2.0.7
 
   /domutils@2.8.0:
     resolution: {integrity: sha512-w96Cjofp72M5IIhpjgobBimYEfoPjx1Vx0BSX9P30WBdZW2WIKU0T1Bd0kz2eNZ9ikjKgHbEyKx8BB6H1L3h3A==}
