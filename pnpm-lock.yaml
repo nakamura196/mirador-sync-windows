@@ -153,16 +153,16 @@ devDependencies:
     specifier: ^0.14.2
     version: 0.14.2
   terser-webpack-plugin:
-    specifier: ^5.3.11
+    specifier: ^5.6.0
     version: 5.6.0(webpack@5.106.2)
   webpack:
-    specifier: ^5.94.0
+    specifier: ^5.106.2
     version: 5.106.2(webpack-cli@5.1.4)
   webpack-cli:
     specifier: ^5.1.4
     version: 5.1.4(webpack-dev-server@5.2.4)(webpack@5.106.2)
   webpack-dev-server:
-    specifier: ^5.2.0
+    specifier: ^5.2.4
     version: 5.2.4(tslib@2.8.1)(webpack-cli@5.1.4)(webpack@5.106.2)
 
 packages:
@@ -3328,8 +3328,8 @@ packages:
       '@testing-library/dom': 9.3.4
     dev: true
 
-  /@tootallnate/once@2.0.0:
-    resolution: {integrity: sha512-XCuKFP5PS55gnMVu3dty8KPatLqUoy/ZYzDzAGCQ8JNFCkLXzmI7vNHCR+XpbZaMWQK/vQubr7PkYq8g470J/A==}
+  /@tootallnate/once@2.0.1:
+    resolution: {integrity: sha512-HqmEUIGRJ5fSXchkVgR5F7qn48bDBzv0kWj/Kfu5e6uci4UlEeng4331LnBkWffb++Ei3FOVLxo8JJWMFBDMeQ==}
     engines: {node: '>= 10'}
     dev: true
 
@@ -6511,7 +6511,7 @@ packages:
     resolution: {integrity: sha512-n2hY8YdoRE1i7r6M0w9DIw5GgZN0G25P8zLCRQ8rjXtTU3vsNFBI/vWK/UIeE6g5MUUz6avwAPXmL6Fy9D/90w==}
     engines: {node: '>= 6'}
     dependencies:
-      '@tootallnate/once': 2.0.0
+      '@tootallnate/once': 2.0.1
       agent-base: 6.0.2
       debug: 4.3.5
     transitivePeerDependencies:
